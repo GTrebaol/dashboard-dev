@@ -1,0 +1,13 @@
+{
+  "name": "dashboard-v2",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "build": "pnpm --filter @dashboard/shared build && pnpm --filter backend build && pnpm --filter frontend build",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

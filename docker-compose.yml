@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dashboard
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/dashboard
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      NODE_ENV: ${NODE_ENV:-development}
+      JIRA_BASE_URL: ${JIRA_BASE_URL:-}
+      GITLAB_BASE_URL: ${GITLAB_BASE_URL:-}
+      SONAR_BASE_URL: ${SONAR_BASE_URL:-}
+      SNOW_BASE_URL: ${SNOW_BASE_URL:-}
+      TOKEN_SERVICE_URL: ${TOKEN_SERVICE_URL:-}
+      GITLAB_TOKEN: ${GITLAB_TOKEN:-}
+      SONARQUBE_TOKEN: ${SONARQUBE_TOKEN:-}
+      JIRA_TOKEN: ${JIRA_TOKEN:-}
+      SNOW_TOKEN: ${SNOW_TOKEN:-}
+      CORS_ORIGIN: http://localhost
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    ports:
+      - '80:80'
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
